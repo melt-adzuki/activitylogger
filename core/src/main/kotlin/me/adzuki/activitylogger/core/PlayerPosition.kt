@@ -1,11 +1,10 @@
 package me.adzuki.activitylogger.core
 
-import kotlin.math.roundToInt
 
 data class PlayerPosition(val x: Double, val y: Double, val z: Double) {
-    val rx get() = x.roundToInt()
-    val ry get() = y.roundToInt()
-    val rz get() = z.roundToInt()
+    val intX get() = x.toInt()
+    val intY get() = y.toInt()
+    val intZ get() = z.toInt()
 
-    override fun toString() = "($rx, $ry, $rz)"
+    override fun toString() = "($intX, $intY, $intZ)"
 }

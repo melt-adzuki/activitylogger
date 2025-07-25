@@ -10,14 +10,18 @@ import net.minecraft.world.entity.player.Player
 import net.neoforged.bus.api.SubscribeEvent
 import net.neoforged.neoforge.event.ServerChatEvent
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
+import net.neoforged.neoforge.event.entity.player.AdvancementEvent
 import net.neoforged.neoforge.event.entity.player.PlayerEvent
 import net.neoforged.neoforge.event.server.ServerStartingEvent
 import net.neoforged.neoforge.event.server.ServerStoppingEvent
 import org.slf4j.Logger
+import kotlin.jvm.optionals.getOrNull
 
 internal object EventHandler {
     private val logger: Logger = LogUtils.getLogger()
-    private val Player.position get() = PlayerPosition(x, y, z)
+
+    private inline val Player.position get() = PlayerPosition(x, y, z)
+    private inline val Player.dimensionId get() = level().dimension().location().toString()
 
     @SubscribeEvent
     fun onServerStarting(event: ServerStartingEvent) {
@@ -40,6 +44,7 @@ internal object EventHandler {
             eventName = "Join",
             playerName = playerName,
             position = player.position,
+            dimensionId = player.dimensionId,
         ).write()
         StatsLogger(playerCount = server.playerCount).write()
         PlayerInfoLogger(
@@ -58,6 +63,7 @@ internal object EventHandler {
             eventName = "Leave",
             playerName = player.name.string,
             position = player.position,
+            dimensionId = player.dimensionId,
         ).write()
         StatsLogger(playerCount = server.playerCount - 1).write()
     }
@@ -72,6 +78,24 @@ internal object EventHandler {
             playerName = player.name.string,
             content = chatMessage,
             position = player.position,
+            dimensionId = player.dimensionId,
+        ).write()
+    }
+
+    @SubscribeEvent
+    fun onAdvancementEarn(event: AdvancementEvent.AdvancementEarnEvent) {
+        if (event.advancement.value.isRoot) return
+
+        val player = event.entity
+        val advancementName = event.advancement.value.display.getOrNull()?.title?.string
+            ?: event.advancement.id.toString()
+
+        EventLogger(
+            eventName = "Advancement",
+            playerName = player.name.string,
+            content = advancementName,
+            position = player.position,
+            dimensionId = player.dimensionId,
         ).write()
     }
 
@@ -85,6 +109,7 @@ internal object EventHandler {
             playerName = player.name.string,
             content = deathMessage,
             position = player.position,
+            dimensionId = player.dimensionId,
         ).write()
     }
 }

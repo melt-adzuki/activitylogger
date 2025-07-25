@@ -8,6 +8,7 @@ class EventLogger(
     val eventName: String,
     val content: String = "",
     val position: PlayerPosition? = null,
+    val dimensionId: String = "",
 ) : Logger() {
     override fun write() {
         val date = Date()
@@ -15,8 +16,8 @@ class EventLogger(
         val currentDateString = dateFormat.format(date)
 
         File("activities_$currentDateString.csv").apply {
-            if (!exists()) appendText("Timestamp,Player,Event,Content,Position\n")
-            appendText("$timestamp,$playerName,$eventName,${content.csvEscaped},${position?.toString()?.csvEscaped ?: ""}\n")
+            if (!exists()) appendText("Timestamp,Player,Event,Content,Position,Dimension\n")
+            appendText("$timestamp,$playerName,$eventName,${content.csvEscaped},${position?.toString()?.csvEscaped ?: ""},${dimensionId}\n")
         }
     }
 }
