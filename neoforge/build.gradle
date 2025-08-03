@@ -1,9 +1,18 @@
+import proguard.gradle.ProGuardTask
+
+buildscript {
+    dependencies {
+        classpath 'com.guardsquare:proguard-gradle:7.7.0'
+    }
+}
+
 plugins {
     id 'java-library'
     id 'maven-publish'
     id 'net.neoforged.moddev' version '2.0.103'
     id 'idea'
     id 'org.jetbrains.kotlin.jvm'
+    id 'com.gradleup.shadow' version '8.3.8'
 }
 
 version = mod_version
@@ -12,10 +21,6 @@ group = mod_group_id
 repositories {
     mavenCentral()
     // Add here additional repositories if required by some of the dependencies below.
-    maven {
-        name = "Kotlin for Forge"
-        setUrl "https://thedarkcolour.github.io/KotlinForForge/"
-    }
 }
 
 base {
@@ -109,9 +114,7 @@ configurations {
 }
 
 dependencies {
-    implementation "thedarkcolour:kotlinforforge-neoforge:$kff_version"
-
-    jarJar implementation(project(":core"))
+    localRuntime implementation(project(":core"))
 
     // Example optional mod dependency with JEI
     // The JEI API is declared for compile time use, while the full JEI artifact is used at runtime
@@ -144,8 +147,6 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
             minecraft_version_range: minecraft_version_range,
             neo_version            : neo_version,
             loader_version_range   : loader_version_range,
-            kff_version            : kff_version,
-            kff_version_range      : kff_version_range,
             mod_id                 : mod_id,
             mod_name               : mod_name,
             mod_license            : mod_license,
@@ -163,6 +164,32 @@ var generateModMetadata = tasks.register("generateModMetadata", ProcessResources
 sourceSets.main.resources.srcDir generateModMetadata
 // To avoid having to run "generateModMetadata" manually, make it run on every project reload
 neoForge.ideSyncTask generateModMetadata
+
+shadowJar {
+    configurations = [project.configurations.named("localRuntime").get()]
+
+    exclude(
+        "META-INF/com.android.tools/",
+        "META-INF/maven/",
+        "META-INF/proguard/",
+        "META-INF/**.kotlin_module",
+    )
+}
+
+tasks.register('proguardJar', ProGuardTask) {
+    dependsOn tasks.shadowJar
+    group = "build"
+
+    injars tasks.shadowJar.archiveFile
+    outjars layout.buildDirectory.file("libs/${base.archivesName.get()}-${version}.jar")
+
+    libraryjars configurations.runtimeClasspath
+    libraryjars files(System.getProperty('java.home') + '/jmods')
+
+    configuration 'proguard.pro'
+}
+
+tasks.build.dependsOn(tasks.proguardJar)
 
 // Example configuration to allow publishing using the maven-publish plugin
 publishing {

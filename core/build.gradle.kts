@@ -11,12 +11,5 @@ repositories {
 }
 
 dependencies {
-    // Expect runtime to have this
-    compileOnly("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
-}
-
-tasks.jar {
-    manifest {
-        attributes["FMLModType"] = "LIBRARY"
-    }
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.9.0")
 }

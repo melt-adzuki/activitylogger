@@ -8,6 +8,7 @@ import me.adzuki.activitylogger.core.StatsLogger
 import net.minecraft.server.level.ServerPlayer
 import net.minecraft.world.entity.player.Player
 import net.neoforged.bus.api.SubscribeEvent
+import net.neoforged.fml.common.EventBusSubscriber
 import net.neoforged.neoforge.event.ServerChatEvent
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent
 import net.neoforged.neoforge.event.entity.player.AdvancementEvent
@@ -17,23 +18,27 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent
 import org.slf4j.Logger
 import kotlin.jvm.optionals.getOrNull
 
-internal object EventHandler {
+@EventBusSubscriber(modid = MOD_ID)
+object EventHandler {
     private val logger: Logger = LogUtils.getLogger()
 
     private inline val Player.position get() = PlayerPosition(x, y, z)
     private inline val Player.dimensionId get() = level().dimension().location().toString()
 
+    @JvmStatic
     @SubscribeEvent
     fun onServerStarting(event: ServerStartingEvent) {
         logger.info("ActivityLogger is running!")
         EventLogger(eventName = "Start").write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onServerStopping(event: ServerStoppingEvent) {
         EventLogger(eventName = "Stop").write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onPlayerJoin(event: PlayerEvent.PlayerLoggedInEvent) {
         val player = event.entity as? ServerPlayer ?: return
@@ -54,6 +59,7 @@ internal object EventHandler {
         ).write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onPlayerLeave(event: PlayerEvent.PlayerLoggedOutEvent) {
         val player = event.entity as? ServerPlayer ?: return
@@ -68,6 +74,7 @@ internal object EventHandler {
         StatsLogger(playerCount = server.playerCount - 1).write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onPlayerChat(event: ServerChatEvent) {
         val player = event.player
@@ -82,6 +89,7 @@ internal object EventHandler {
         ).write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onAdvancementEarn(event: AdvancementEvent.AdvancementEarnEvent) {
         if (event.advancement.value.isRoot) return
@@ -99,6 +107,7 @@ internal object EventHandler {
         ).write()
     }
 
+    @JvmStatic
     @SubscribeEvent
     fun onPlayerDeath(event: LivingDeathEvent) {
         val player = event.entity as? Player ?: return

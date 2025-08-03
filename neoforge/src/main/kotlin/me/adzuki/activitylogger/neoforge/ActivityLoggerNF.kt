@@ -1,14 +1,11 @@
 package me.adzuki.activitylogger.neoforge
 
 import net.neoforged.api.distmarker.Dist
+import net.neoforged.bus.api.IEventBus
+import net.neoforged.fml.ModContainer
 import net.neoforged.fml.common.Mod
-import net.neoforged.neoforge.common.NeoForge
 
-@Mod(value = ActivityLoggerNF.MOD_ID, dist = [Dist.DEDICATED_SERVER])
-object ActivityLoggerNF {
-    const val MOD_ID = "activitylogger"
+const val MOD_ID = "activitylogger"
 
-    init {
-        NeoForge.EVENT_BUS.register(EventHandler)
-    }
-}
+@Mod(value = MOD_ID, dist = [Dist.DEDICATED_SERVER])
+class ActivityLoggerNF(modBus: IEventBus, container: ModContainer)
